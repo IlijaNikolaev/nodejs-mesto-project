@@ -20,12 +20,6 @@ app.use((req: Request, res: Response, next: NextFunction) => {
 app.use(userRouter)
 app.use(cardRouter)
 
-
-app.get('/', (req, res) => {
-  console.log('get request')
-  res.send('Hello World!')
-})
-
 app.listen(port, () => {
   console.log('Listening on port ' + port);
 })
