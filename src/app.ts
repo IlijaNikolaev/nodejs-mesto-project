@@ -1,7 +1,8 @@
-import express, {NextFunction, request, Request, Response} from "express";
+import express, {NextFunction, Request, Response} from "express";
 import mongoose from "mongoose";
 import userRouter from './routes/user'
 import cardRouter from './routes/card'
+import notFoundHandler from "./middleware/404";
 
 const app = express()
 const port = 3000;
@@ -11,14 +12,15 @@ app.use(express.urlencoded({ extended: true }));
 
 app.use((req: Request, res: Response, next: NextFunction) => {
   req.user = {
-    _id: '68b0043352d6b98e4e781ddd' // вставьте сюда _id созданного в предыдущем пункте пользователя
+    _id: '68b0043352d6b98e4e781ddd'
   };
 
   next();
 });
 
-app.use(userRouter)
-app.use(cardRouter)
+app.use(userRouter);
+app.use(cardRouter);
+app.use(notFoundHandler);
 
 app.listen(port, () => {
   console.log('Listening on port ' + port);

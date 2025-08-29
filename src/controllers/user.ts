@@ -1,30 +1,18 @@
 import { Request, Response } from 'express';
-import mongoose, { Types } from 'mongoose';
 import User from '../models/user';
 import {
   AVATAR_INCORRECT, ID_INCORRECT, PROFILE_INCORRECT, USER_NOT_FOUND,
 } from '../constants/errorMessages';
 
-const isObjectIdValid = (id: string | Types.ObjectId) => mongoose.Types.ObjectId.isValid(id);
-
 export function getUsers(req: Request, res: Response) {
   return User.find({})
-    .then((users) => {
-      if (!users.length) {
-        res.status(404).send({ message: USER_NOT_FOUND });
-        return;
-      }
-      res.status(200).send(users);
-    })
+    .then((users) => res
+      .status(200).send(users))
     .catch((err) => res.status(500).json(err));
 }
 
 export function getUserById(req: Request, res: Response) {
   const { id } = req.params;
-
-  if (!isObjectIdValid(id)) {
-    return res.status(400).send({ message: ID_INCORRECT });
-  }
 
   return User.findById(id)
     .then((user) => {
@@ -34,7 +22,13 @@ export function getUserById(req: Request, res: Response) {
       }
       res.status(200).send(user);
     })
-    .catch((err) => res.status(500).json(err));
+    .catch((err) => {
+      if (err.name === 'CastError') {
+        res.status(400).send({ message: ID_INCORRECT });
+        return;
+      }
+      res.status(500).json(err);
+    });
 }
 
 export function createUser(req: Request, res: Response) {
@@ -55,9 +49,6 @@ export function updateUser(req: Request, res: Response) {
   const { name, about } = req.body;
   const { _id: id } = req.user;
 
-  if (!isObjectIdValid(id)) {
-    return res.status(400).send({ message: ID_INCORRECT });
-  }
   return User.findByIdAndUpdate(id, { name, about }, { new: true, runValidators: true })
     .then((user) => {
       if (!user) {
@@ -69,6 +60,9 @@ export function updateUser(req: Request, res: Response) {
     .catch((err) => {
       if (err.name === 'ValidationError') {
         res.status(400).send({ message: PROFILE_INCORRECT });
+        return;
+      } if (err.name === 'CastError') {
+        res.status(400).send({ message: ID_INCORRECT });
         return;
       }
       res.status(500).send(err);

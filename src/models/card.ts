@@ -21,7 +21,7 @@ const cardSchema = new Schema<ICard>({
     required: true,
   },
   owner: {
-    type: String,
+    type: Schema.Types.ObjectId,
     required: true,
     ref: 'user',
   },
@@ -30,6 +30,10 @@ const cardSchema = new Schema<ICard>({
     ref: 'user',
     default: [],
   }],
+  createdAt: {
+    type: Date,
+    default: Date.now,
+  },
 });
 
 export default mongoose.model('card', cardSchema);
